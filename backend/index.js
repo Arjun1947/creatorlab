@@ -15,13 +15,16 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// ✅ HEALTH CHECK
+/* =======================
+   HEALTH CHECK
+======================= */
 app.get("/api/test", (req, res) => {
   res.json({ success: true, message: "Backend connected successfully ✅" });
 });
 
-// ✅ AI CAPTION ROUTE (PLATFORM-AWARE)
-// ✅ BIO / PROFILE OPTIMIZER
+/* =======================
+   BIO / PROFILE OPTIMIZER
+======================= */
 app.post("/api/bio", async (req, res) => {
   try {
     const { niche, platform, tone } = req.body;
@@ -74,15 +77,13 @@ Return ONLY this JSON:
 {
   "bios": ["...", "...", "..."]
 }
-        `,
+          `,
         },
       ],
       temperature: 0.7,
     });
 
     const raw = completion.choices[0].message.content;
-    console.log("BIO RAW RESPONSE:", raw);
-
     const parsed = JSON.parse(raw);
 
     res.json({
@@ -97,11 +98,13 @@ Return ONLY this JSON:
   }
 });
 
+/* =======================
+   CAPTION GENERATOR
+======================= */
 app.post("/api/caption", async (req, res) => {
   try {
     const { topic, tone, platform } = req.body;
 
-    // 🔥 PLATFORM RULES (THIS WAS MISSING BEFORE)
     let platformInstruction = "";
 
     if (platform === "Instagram") {
@@ -109,20 +112,14 @@ app.post("/api/caption", async (req, res) => {
 MANDATORY RULES:
 - EVERY caption MUST include at least one emoji (🔥 💪 ✨ 🚀 😎)
 - Captions must be SHORT (max 12 words)
-- Style must feel Instagram Reel–native
-- Fun, aesthetic, scroll-stopping
+- Instagram Reel–native
 `;
     } else if (platform === "YouTube Shorts") {
       platformInstruction = `
 MANDATORY RULES:
-- EVERY caption MUST start with a hook
-- Hooks like: "Wait for it...", "Nobody talks about this...", "This will change everything..."
-- Add CTA like "Watch till the end" or "Subscribe for more"
-- NO emojis in captions
-`;
-    } else {
-      platformInstruction = `
-General social media style
+- Start with a hook
+- Add CTA like "Watch till the end"
+- NO emojis
 `;
     }
 
@@ -130,31 +127,24 @@ General social media style
       model: "llama-3.1-8b-instant",
       messages: [
         {
-  role: "system",
-  content: `
-You are a senior social media strategist and viral content writer.
+          role: "system",
+          content: `
+You are a senior social media strategist.
 
-RULES YOU MUST FOLLOW:
-- Write captions like a real creator, not AI
-- Avoid generic phrases like "Stay motivated", "Believe in yourself"
-- Captions must sound natural, punchy, and confident
-- Use curiosity, urgency, or emotion
-- Do NOT explain anything
-- Do NOT add extra text
-- Respond ONLY with valid JSON
-`,
-},
-
+RULES:
+- Sound human
+- No explanations
+- JSON only
+          `,
+        },
         {
           role: "user",
           content: `
-Create HIGH-QUALITY, VIRAL social media captions that could realistically go viral.
-
 Platform: ${platform}
 Topic: ${topic}
 Tone: ${tone}
 
-Platform Rules:
+Rules:
 ${platformInstruction}
 
 Return ONLY this JSON:
@@ -169,8 +159,6 @@ Return ONLY this JSON:
     });
 
     const raw = completion.choices[0].message.content;
-    console.log("RAW AI RESPONSE:", raw);
-
     const parsed = JSON.parse(raw);
 
     res.json({
@@ -179,7 +167,7 @@ Return ONLY this JSON:
     });
 
   } catch (error) {
-    console.error("GROQ ERROR:", error.message);
+    console.error("CAPTION ERROR:", error.message);
     res.status(500).json({
       captions: ["⚠️ AI failed, try again"],
       hashtags: ["#error"],
@@ -187,7 +175,11 @@ Return ONLY this JSON:
   }
 });
 
-const PORT = 5000;
+/* =======================
+   PORT (RENDER SAFE)
+======================= */
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log(`🚀 Backend running on port ${PORT}`);
 });
