@@ -1,20 +1,28 @@
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import DashboardLayout from "./Layouts/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
+
+// pages
 import CaptionGenerator from "./pages/CaptionGenerator";
 import BioOptimizer from "./pages/BioOptimizer";
+import History from "./pages/History";
 
-function App() {
+export default function App() {
   return (
-    <Routes>
-      {/* Dashboard layout */}
-      <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="captions" element={<CaptionGenerator />} />
-        <Route path="bio" element={<BioOptimizer />} />
-      </Route>
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+
+        {/* ✅ HOME ROUTE FIX */}
+        <Route path="/" element={<Navigate to="/caption" />} />
+
+        {/* Dashboard Layout */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/caption" element={<CaptionGenerator />} />
+          <Route path="/bio" element={<BioOptimizer />} />
+          <Route path="/history" element={<History />} />
+        </Route>
+
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App;
