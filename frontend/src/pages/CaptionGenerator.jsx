@@ -57,7 +57,9 @@ export default function CaptionGenerator() {
     setResult(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/caption", {
+      const API_URL = import.meta.env.VITE_API_URL;
+
+      const response = await fetch(`${API_URL}/api/caption`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic, tone, platform }),
@@ -85,12 +87,9 @@ export default function CaptionGenerator() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-
       {/* MAIN */}
       <div className="md:col-span-2">
-        <h2 className="text-3xl font-bold mb-6">
-          Caption & Hashtag Generator
-        </h2>
+        <h2 className="text-3xl font-bold mb-6">Caption & Hashtag Generator</h2>
 
         {/* Inputs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -174,9 +173,7 @@ export default function CaptionGenerator() {
               <div className="bg-gray-100 p-4 rounded flex justify-between items-start gap-4">
                 <p className="flex-1">{result.hashtags.join(" ")}</p>
                 <button
-                  onClick={() =>
-                    copyToClipboard(result.hashtags.join(" "))
-                  }
+                  onClick={() => copyToClipboard(result.hashtags.join(" "))}
                   className="bg-gray-900 text-white px-4 py-2 rounded"
                 >
                   Copy
@@ -189,13 +186,10 @@ export default function CaptionGenerator() {
 
       {/* SIDE PANEL */}
       <div className="space-y-6">
-
         {/* HISTORY */}
         <div className="bg-gray-50 p-4 rounded border">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold">
-              Recent Generations
-            </h3>
+            <h3 className="text-lg font-semibold">Recent Generations</h3>
 
             {history.length > 0 && (
               <button
@@ -212,9 +206,7 @@ export default function CaptionGenerator() {
           </div>
 
           {history.length === 0 && (
-            <p className="text-sm text-gray-500">
-              No history yet
-            </p>
+            <p className="text-sm text-gray-500">No history yet</p>
           )}
 
           <div className="space-y-3">
@@ -224,15 +216,11 @@ export default function CaptionGenerator() {
                 className="p-3 bg-white rounded border cursor-pointer hover:bg-gray-100"
                 onClick={() => setResult(item)}
               >
-                <p className="text-sm font-medium">
-                  {item.topic}
-                </p>
+                <p className="text-sm font-medium">{item.topic}</p>
                 <p className="text-xs text-gray-500">
                   {item.platform} • {item.tone}
                 </p>
-                <p className="text-xs text-gray-400">
-                  {item.time}
-                </p>
+                <p className="text-xs text-gray-400">{item.time}</p>
               </div>
             ))}
           </div>
@@ -240,14 +228,10 @@ export default function CaptionGenerator() {
 
         {/* ⭐ FAVORITES */}
         <div className="bg-yellow-50 p-4 rounded border">
-          <h3 className="text-lg font-semibold mb-3">
-            ⭐ Favorite Captions
-          </h3>
+          <h3 className="text-lg font-semibold mb-3">⭐ Favorite Captions</h3>
 
           {favorites.length === 0 && (
-            <p className="text-sm text-gray-500">
-              No favorites yet
-            </p>
+            <p className="text-sm text-gray-500">No favorites yet</p>
           )}
 
           <div className="space-y-3">
@@ -275,7 +259,6 @@ export default function CaptionGenerator() {
             ))}
           </div>
         </div>
-
       </div>
     </div>
   );

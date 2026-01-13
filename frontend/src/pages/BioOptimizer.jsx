@@ -8,7 +8,7 @@ const copyToClipboard = (text) => {
 export default function BioOptimizer() {
   const [niche, setNiche] = useState("");
   const [platform, setPlatform] = useState("Instagram");
-  const [tone, setTone] = useState("Creator");
+  const [tone, setTone] = useState("Professional");
   const [bios, setBios] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,13 +22,16 @@ export default function BioOptimizer() {
     setBios([]);
 
     try {
-      const response = await fetch("http://localhost:5000/api/bio", {
+      const API_URL = import.meta.env.VITE_API_URL;
+
+      const response = await fetch(`${API_URL}/api/bio`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ niche, platform, tone }),
       });
 
       const data = await response.json();
+
       setBios(data.bios || []);
     } catch (error) {
       alert("Backend not reachable");
@@ -38,15 +41,14 @@ export default function BioOptimizer() {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6">
-        Bio / Profile Optimizer
-      </h2>
+    <div className="p-8 max-w-4xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6">Bio / Profile Optimizer</h2>
 
+      {/* Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <input
           type="text"
-          placeholder="Your niche (e.g. Fitness coach)"
+          placeholder="Enter niche (e.g. Fitness coach)"
           value={niche}
           onChange={(e) => setNiche(e.target.value)}
           className="border p-3 rounded"
@@ -66,35 +68,40 @@ export default function BioOptimizer() {
           onChange={(e) => setTone(e.target.value)}
           className="border p-3 rounded"
         >
-          <option>Creator</option>
           <option>Professional</option>
-          <option>Personal</option>
+          <option>Funny</option>
+          <option>Motivational</option>
         </select>
       </div>
 
+      {/* Button */}
       <button
         onClick={generateBio}
         disabled={loading}
         className={`px-6 py-3 rounded text-white ${
           loading
-            ? "bg-gray-400"
+            ? "bg-gray-400 cursor-not-allowed"
             : "bg-gray-900 hover:bg-gray-700"
         }`}
       >
-        {loading ? "Optimizing..." : "Generate Bio"}
+        {loading ? "Generating..." : "Generate Bio"}
       </button>
 
+      {/* Output */}
       {bios.length > 0 && (
         <div className="mt-8 space-y-4">
+          <h3 className="text-xl font-semibold">Optimized Bios</h3>
+
           {bios.map((bio, index) => (
             <div
               key={index}
-              className="flex justify-between items-start bg-white p-4 rounded border"
+              className="flex justify-between items-start bg-white p-4 rounded border gap-4"
             >
-              <p className="whitespace-pre-line">{bio}</p>
+              <p className="whitespace-pre-line flex-1">{bio}</p>
+
               <button
                 onClick={() => copyToClipboard(bio)}
-                className="text-sm bg-gray-900 text-white px-3 py-1 rounded"
+                className="bg-gray-900 text-white px-4 py-2 rounded"
               >
                 Copy
               </button>
