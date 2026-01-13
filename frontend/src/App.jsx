@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import DashboardLayout from "./DashboardLayout";
+import DashboardLayout from "./Layouts/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import CaptionGenerator from "./pages/CaptionGenerator";
 import BioOptimizer from "./pages/BioOptimizer";
