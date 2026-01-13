@@ -10,15 +10,18 @@ import History from "./pages/History";
 export default function App() {
   return (
     <Routes>
-      {/* ✅ HOME ROUTE FIX */}
-      <Route path="/" element={<Navigate to="/caption" />} />
+      {/* Home route */}
+      <Route path="/" element={<Navigate to="/caption" replace />} />
 
-      {/* Layout */}
+      {/* Layout wrapper */}
       <Route element={<DashboardLayout />}>
         <Route path="/caption" element={<CaptionGenerator />} />
         <Route path="/bio" element={<BioOptimizer />} />
         <Route path="/history" element={<History />} />
       </Route>
+
+      {/* fallback */}
+      <Route path="*" element={<Navigate to="/caption" replace />} />
     </Routes>
   );
 }

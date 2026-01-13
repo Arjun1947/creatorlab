@@ -18,7 +18,7 @@ export default function DashboardLayout() {
 
         <nav className="space-y-3 flex-1">
           <NavLink
-            to="/dashboard"
+            to="/caption"
             end
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${
@@ -30,7 +30,7 @@ export default function DashboardLayout() {
           </NavLink>
 
           <NavLink
-            to="/dashboard/captions"
+            to="/caption"
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${
                 isActive ? "bg-gray-700" : "hover:bg-gray-800"
@@ -41,7 +41,7 @@ export default function DashboardLayout() {
           </NavLink>
 
           <NavLink
-            to="/dashboard/bio"
+            to="/bio"
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${
                 isActive ? "bg-gray-700" : "hover:bg-gray-800"
@@ -49,6 +49,17 @@ export default function DashboardLayout() {
             }
           >
             👤 Bio Optimizer
+          </NavLink>
+
+          <NavLink
+            to="/history"
+            className={({ isActive }) =>
+              `block px-4 py-2 rounded ${
+                isActive ? "bg-gray-700" : "hover:bg-gray-800"
+              }`
+            }
+          >
+            🕒 History
           </NavLink>
         </nav>
 
