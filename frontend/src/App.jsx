@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import DashboardLayout from "./Layouts/DashboardLayout";
 
@@ -9,20 +9,16 @@ import History from "./pages/History";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <Routes>
+      {/* ✅ HOME ROUTE FIX */}
+      <Route path="/" element={<Navigate to="/caption" />} />
 
-        {/* ✅ HOME ROUTE FIX */}
-        <Route path="/" element={<Navigate to="/caption" />} />
-
-        {/* Dashboard Layout */}
-        <Route element={<DashboardLayout />}>
-          <Route path="/caption" element={<CaptionGenerator />} />
-          <Route path="/bio" element={<BioOptimizer />} />
-          <Route path="/history" element={<History />} />
-        </Route>
-
-      </Routes>
-    </BrowserRouter>
+      {/* Layout */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/caption" element={<CaptionGenerator />} />
+        <Route path="/bio" element={<BioOptimizer />} />
+        <Route path="/history" element={<History />} />
+      </Route>
+    </Routes>
   );
 }
