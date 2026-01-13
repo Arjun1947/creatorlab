@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import DashboardLayout from "./Layouts/DashboardLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 // pages
 import CaptionGenerator from "./pages/CaptionGenerator";
@@ -10,8 +10,8 @@ import History from "./pages/History";
 export default function App() {
   return (
     <Routes>
-      {/* Home route */}
-      <Route path="/" element={<Navigate to="/caption" replace />} />
+      {/* Default route */}
+      <Route path="/" element={<Navigate to="/caption" />} />
 
       {/* Layout wrapper */}
       <Route element={<DashboardLayout />}>
@@ -20,8 +20,8 @@ export default function App() {
         <Route path="/history" element={<History />} />
       </Route>
 
-      {/* fallback */}
-      <Route path="*" element={<Navigate to="/caption" replace />} />
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/caption" />} />
     </Routes>
   );
 }

@@ -5,13 +5,13 @@ const copyToClipboard = (text) => {
   alert("Copied to clipboard ✅");
 };
 
-const HISTORY_KEY = "creatorlab_history";
-const FAVORITES_KEY = "creatorlab_favorites";
+const HISTORY_KEY = "creatorlab_bio_history";
+const FAVORITES_KEY = "creatorlab_bio_favorites";
 
-export default function CaptionGenerator() {
-  const [topic, setTopic] = useState("");
+export default function BioOptimizer() {
+  const [niche, setNiche] = useState("");
   const [platform, setPlatform] = useState("Instagram");
-  const [tone, setTone] = useState("Motivational");
+  const [tone, setTone] = useState("Professional");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
@@ -26,7 +26,7 @@ export default function CaptionGenerator() {
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
   }, []);
 
-  // 🔹 Save history
+  // 🔹 Save history helper
   const saveToHistory = (entry) => {
     const updated = [entry, ...history].slice(0, 5);
     setHistory(updated);
@@ -34,22 +34,22 @@ export default function CaptionGenerator() {
   };
 
   // ⭐ Toggle favorite
-  const toggleFavorite = (caption) => {
+  const toggleFavorite = (bio) => {
     let updated;
 
-    if (favorites.includes(caption)) {
-      updated = favorites.filter((c) => c !== caption);
+    if (favorites.includes(bio)) {
+      updated = favorites.filter((b) => b !== bio);
     } else {
-      updated = [caption, ...favorites].slice(0, 10);
+      updated = [bio, ...favorites].slice(0, 10);
     }
 
     setFavorites(updated);
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated));
   };
 
-  const generateContent = async () => {
-    if (!topic) {
-      alert("Please enter a topic");
+  const generateBio = async () => {
+    if (!niche) {
+      alert("Please enter your niche");
       return;
     }
 
@@ -67,13 +67,12 @@ export default function CaptionGenerator() {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/caption`, {
+      const response = await fetch(`${API_URL}/api/bio`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, tone, platform }),
+        body: JSON.stringify({ niche, platform, tone }),
       });
 
-      // If backend gives error
       if (!response.ok) {
         const errText = await response.text();
         console.error("Backend Error:", errText);
@@ -85,11 +84,10 @@ export default function CaptionGenerator() {
       const data = await response.json();
 
       const payload = {
-        topic,
-        tone,
+        niche,
         platform,
-        captions: data.captions || [],
-        hashtags: data.hashtags || [],
+        tone,
+        bios: data.bios || [],
         time: new Date().toLocaleString(),
       };
 
@@ -104,18 +102,18 @@ export default function CaptionGenerator() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* MAIN */}
       <div className="md:col-span-2">
-        <h2 className="text-3xl font-bold mb-6">Caption & Hashtag Generator</h2>
+        <h2 className="text-3xl font-bold mb-6">Bio / Profile Optimizer</h2>
 
         {/* Inputs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <input
             type="text"
-            placeholder="Enter topic (e.g. Gym motivation)"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
+            placeholder="Enter niche (e.g. Fitness coach, Tech creator)"
+            value={niche}
+            onChange={(e) => setNiche(e.target.value)}
             className="border p-3 rounded"
           />
 
@@ -125,7 +123,7 @@ export default function CaptionGenerator() {
             className="border p-3 rounded"
           >
             <option>Instagram</option>
-            <option>YouTube Shorts</option>
+            <option>YouTube</option>
           </select>
 
           <select
@@ -133,14 +131,14 @@ export default function CaptionGenerator() {
             onChange={(e) => setTone(e.target.value)}
             className="border p-3 rounded"
           >
-            <option>Motivational</option>
-            <option>Funny</option>
             <option>Professional</option>
+            <option>Funny</option>
+            <option>Motivational</option>
           </select>
         </div>
 
         <button
-          onClick={generateContent}
+          onClick={generateBio}
           disabled={loading}
           className={`px-6 py-3 rounded text-white ${
             loading
@@ -148,32 +146,34 @@ export default function CaptionGenerator() {
               : "bg-gray-900 hover:bg-gray-700"
           }`}
         >
-          {loading ? "Generating..." : "Generate"}
+          {loading ? "Generating..." : "Generate Bio"}
         </button>
 
         {/* Output */}
         {result && (
           <div className="mt-8 space-y-6">
             <div>
-              <h3 className="text-xl font-semibold mb-2">Captions</h3>
+              <h3 className="text-xl font-semibold mb-2">Optimized Bios</h3>
               <div className="space-y-3">
-                {result.captions.map((cap, index) => (
+                {result.bios.map((bio, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center bg-white p-3 rounded border"
+                    className="flex justify-between items-start bg-white p-3 rounded border"
                   >
-                    <span>{cap}</span>
+                    <span className="whitespace-pre-line">{bio}</span>
+
                     <div className="flex gap-2">
                       <button
-                        onClick={() => copyToClipboard(cap)}
+                        onClick={() => copyToClipboard(bio)}
                         className="text-sm bg-gray-900 text-white px-3 py-1 rounded"
                       >
                         Copy
                       </button>
+
                       <button
-                        onClick={() => toggleFavorite(cap)}
+                        onClick={() => toggleFavorite(bio)}
                         className={`text-sm px-3 py-1 rounded border ${
-                          favorites.includes(cap)
+                          favorites.includes(bio)
                             ? "bg-yellow-400"
                             : "bg-white"
                         }`}
@@ -185,19 +185,6 @@ export default function CaptionGenerator() {
                 ))}
               </div>
             </div>
-
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Hashtags</h3>
-              <div className="bg-gray-100 p-4 rounded flex justify-between items-start gap-4">
-                <p className="flex-1">{result.hashtags.join(" ")}</p>
-                <button
-                  onClick={() => copyToClipboard(result.hashtags.join(" "))}
-                  className="bg-gray-900 text-white px-4 py-2 rounded"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -207,7 +194,7 @@ export default function CaptionGenerator() {
         {/* HISTORY */}
         <div className="bg-gray-50 p-4 rounded border">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold">Recent Generations</h3>
+            <h3 className="text-lg font-semibold">Recent Bios</h3>
 
             {history.length > 0 && (
               <button
@@ -234,7 +221,7 @@ export default function CaptionGenerator() {
                 className="p-3 bg-white rounded border cursor-pointer hover:bg-gray-100"
                 onClick={() => setResult(item)}
               >
-                <p className="text-sm font-medium">{item.topic}</p>
+                <p className="text-sm font-medium">{item.niche}</p>
                 <p className="text-xs text-gray-500">
                   {item.platform} • {item.tone}
                 </p>
@@ -246,28 +233,28 @@ export default function CaptionGenerator() {
 
         {/* ⭐ FAVORITES */}
         <div className="bg-yellow-50 p-4 rounded border">
-          <h3 className="text-lg font-semibold mb-3">⭐ Favorite Captions</h3>
+          <h3 className="text-lg font-semibold mb-3">⭐ Favorite Bios</h3>
 
           {favorites.length === 0 && (
             <p className="text-sm text-gray-500">No favorites yet</p>
           )}
 
           <div className="space-y-3">
-            {favorites.map((cap, index) => (
+            {favorites.map((bio, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center bg-white p-3 rounded border"
+                className="flex justify-between items-start bg-white p-3 rounded border"
               >
-                <span className="text-sm">{cap}</span>
+                <span className="text-sm whitespace-pre-line">{bio}</span>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => copyToClipboard(cap)}
+                    onClick={() => copyToClipboard(bio)}
                     className="text-xs bg-gray-900 text-white px-2 py-1 rounded"
                   >
                     Copy
                   </button>
                   <button
-                    onClick={() => toggleFavorite(cap)}
+                    onClick={() => toggleFavorite(bio)}
                     className="text-xs bg-red-500 text-white px-2 py-1 rounded"
                   >
                     ✕

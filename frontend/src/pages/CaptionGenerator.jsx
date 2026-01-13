@@ -86,7 +86,7 @@ export default function CaptionGenerator() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* MAIN */}
       <div className="md:col-span-2">
         <h2 className="text-3xl font-bold mb-6">Caption & Hashtag Generator</h2>

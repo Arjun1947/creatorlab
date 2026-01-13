@@ -13,34 +13,44 @@ export default function DashboardLayout() {
     navigate("/login");
   };
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
-
       {/* ✅ Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
         />
       )}
 
       {/* ✅ Sidebar */}
       <aside
         className={`
-          fixed md:static top-0 left-0 z-50
-          h-full w-64 bg-gray-900 text-white p-6 flex flex-col
+          fixed md:sticky md:top-0 top-0 left-0 z-50
+          h-screen w-64 bg-gray-900 text-white p-6 flex flex-col
           transform transition-transform duration-300
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
       >
-        <h1 className="text-2xl font-bold mb-8">CreatorLab</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold">CreatorLab</h1>
+
+          {/* Close button (Mobile) */}
+          <button
+            onClick={closeSidebar}
+            className="md:hidden text-white text-2xl"
+          >
+            ✖
+          </button>
+        </div>
 
         <nav className="space-y-3 flex-1">
           <NavLink
             to="/caption"
-            end
-            onClick={() => setSidebarOpen(false)}
+            onClick={closeSidebar}
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${
                 isActive ? "bg-gray-700" : "hover:bg-gray-800"
@@ -52,7 +62,7 @@ export default function DashboardLayout() {
 
           <NavLink
             to="/bio"
-            onClick={() => setSidebarOpen(false)}
+            onClick={closeSidebar}
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${
                 isActive ? "bg-gray-700" : "hover:bg-gray-800"
@@ -64,7 +74,7 @@ export default function DashboardLayout() {
 
           <NavLink
             to="/history"
-            onClick={() => setSidebarOpen(false)}
+            onClick={closeSidebar}
             className={({ isActive }) =>
               `block px-4 py-2 rounded ${
                 isActive ? "bg-gray-700" : "hover:bg-gray-800"
@@ -84,21 +94,19 @@ export default function DashboardLayout() {
       </aside>
 
       {/* ✅ Main Content */}
-      <div className="flex-1 w-full md:ml-64">
-
-        {/* ✅ Top Bar (Mobile Header) */}
-        <div className="md:hidden flex items-center justify-between bg-white shadow px-4 py-3">
+      <div className="flex-1 flex flex-col md:ml-64">
+        {/* Topbar (Mobile Only) */}
+        <header className="md:hidden bg-white shadow p-4 flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
             className="bg-gray-900 text-white px-3 py-2 rounded"
           >
-            ☰ Menu
+            ☰
           </button>
+          <h2 className="font-semibold text-gray-800">CreatorLab</h2>
+        </header>
 
-          <h2 className="font-bold text-gray-800">CreatorLab</h2>
-        </div>
-
-        <main className="p-4 md:p-8">
+        <main className="flex-1 p-4 md:p-8">
           <Outlet />
         </main>
       </div>
