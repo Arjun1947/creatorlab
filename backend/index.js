@@ -180,6 +180,10 @@ Return ONLY this JSON:
 ======================= */
 const PORT = process.env.PORT || 5000;
 
+app.get("/", (req, res) => {
+  res.send("CreatorLab Backend is running ✅ Use /api/test");
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Backend running on port ${PORT}`);
 });
