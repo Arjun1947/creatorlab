@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-export default function Login() {
+export default function Signup() {
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      alert("Please enter email & password");
+    if (!name || !email || !password) {
+      alert("Please fill all fields");
       return;
     }
 
@@ -21,26 +22,22 @@ export default function Login() {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
-      const res = await fetch(`${API_URL}/api/auth/login`, {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Login failed");
+        alert(data.message || "Signup failed");
         setLoading(false);
         return;
       }
 
-      // Save token + user
-      localStorage.setItem("creatorlab_token", data.token);
-      localStorage.setItem("creatorlab_user", JSON.stringify(data.user));
-
-      alert("Login Successful ✅");
-      navigate("/caption");
+      alert("Signup Successful ✅ Please login now");
+      navigate("/login");
     } catch (err) {
       alert("Server not reachable ❌");
     } finally {
@@ -51,12 +48,20 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-md border">
-        <h2 className="text-2xl font-bold mb-2">Login</h2>
+        <h2 className="text-2xl font-bold mb-2">Sign Up</h2>
         <p className="text-gray-500 mb-6 text-sm">
-          Login to access CreatorLab Dashboard
+          Create your CreatorLab account
         </p>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Name"
+            className="w-full border p-3 rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
           <input
             type="email"
             placeholder="Email"
@@ -79,14 +84,14 @@ export default function Login() {
               loading ? "bg-gray-400" : "bg-gray-900 hover:bg-gray-700"
             }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Creating..." : "Create Account"}
           </button>
         </form>
 
         <p className="text-sm text-gray-600 mt-4">
-          Don’t have an account?{" "}
-          <Link to="/signup" className="text-blue-600 font-medium">
-            Sign up
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 font-medium">
+            Login
           </Link>
         </p>
       </div>

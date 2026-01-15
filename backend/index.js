@@ -3,35 +3,26 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Groq from "groq-sdk";
 
+import { connectDB } from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+
 dotenv.config();
 
 console.log("GROQ KEY LOADED:", !!process.env.GROQ_API_KEY);
+console.log("MONGODB URI LOADED:", !!process.env.MONGODB_URI);
 
 const app = express();
 
 /* =======================
-   CORS (IMPORTANT FOR RENDER)
-   - Add your frontend URL here
+   CORS FIX (Frontend + Local)
 ======================= */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://creatorlab-1.onrender.com", // ✅ Your frontend static site URL
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow Postman / curl requests (no origin)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("CORS blocked: " + origin), false);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: [
+      "http://localhost:5173",
+      "https://creatorlab-1.onrender.com",
+      "https://creatorlab-1.onrender.com/frontend",
+    ],
     credentials: true,
   })
 );
@@ -39,33 +30,28 @@ app.use(
 app.use(express.json());
 
 /* =======================
-   GROQ CLIENT
+   CONNECT DB
+======================= */
+connectDB();
+
+/* =======================
+   GROQ INIT
 ======================= */
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
 /* =======================
-   HEALTH CHECK ROUTES
+   AUTH ROUTES
 ======================= */
-app.get("/", (req, res) => {
-  res.send("CreatorLab Backend is running ✅ Use /api/test");
-});
+app.use("/api/auth", authRoutes);
 
+/* =======================
+   HEALTH CHECK
+======================= */
 app.get("/api/test", (req, res) => {
   res.json({ success: true, message: "Backend connected successfully ✅" });
 });
-
-/* =======================
-   HELPER: SAFE JSON PARSE
-======================= */
-const safeJsonParse = (text) => {
-  try {
-    return JSON.parse(text);
-  } catch (err) {
-    return null;
-  }
-};
 
 /* =======================
    BIO / PROFILE OPTIMIZER
@@ -73,18 +59,6 @@ const safeJsonParse = (text) => {
 app.post("/api/bio", async (req, res) => {
   try {
     const { niche, platform, tone } = req.body;
-
-    if (!process.env.GROQ_API_KEY) {
-      return res.status(500).json({
-        bios: ["❌ GROQ_API_KEY missing in backend environment variables"],
-      });
-    }
-
-    if (!niche || !platform || !tone) {
-      return res.status(400).json({
-        bios: ["❌ Missing niche/platform/tone in request body"],
-      });
-    }
 
     let platformRule = "";
 
@@ -140,18 +114,11 @@ Return ONLY this JSON:
       temperature: 0.7,
     });
 
-    const raw = completion.choices?.[0]?.message?.content || "";
-    const parsed = safeJsonParse(raw);
-
-    if (!parsed || !Array.isArray(parsed.bios)) {
-      console.log("BIO RAW RESPONSE:", raw);
-      return res.status(500).json({
-        bios: ["⚠️ Bio generation failed (Invalid JSON response from AI)"],
-      });
-    }
+    const raw = completion.choices[0].message.content;
+    const parsed = JSON.parse(raw);
 
     res.json({
-      bios: parsed.bios,
+      bios: parsed.bios || [],
     });
   } catch (error) {
     console.error("BIO ERROR:", error.message);
@@ -167,20 +134,6 @@ Return ONLY this JSON:
 app.post("/api/caption", async (req, res) => {
   try {
     const { topic, tone, platform } = req.body;
-
-    if (!process.env.GROQ_API_KEY) {
-      return res.status(500).json({
-        captions: ["❌ GROQ_API_KEY missing in backend environment variables"],
-        hashtags: ["#missing_key"],
-      });
-    }
-
-    if (!topic || !platform || !tone) {
-      return res.status(400).json({
-        captions: ["❌ Missing topic/platform/tone in request body"],
-        hashtags: ["#bad_request"],
-      });
-    }
 
     let platformInstruction = "";
 
@@ -235,16 +188,8 @@ Return ONLY this JSON:
       temperature: 0.8,
     });
 
-    const raw = completion.choices?.[0]?.message?.content || "";
-    const parsed = safeJsonParse(raw);
-
-    if (!parsed || !Array.isArray(parsed.captions)) {
-      console.log("CAPTION RAW RESPONSE:", raw);
-      return res.status(500).json({
-        captions: ["⚠️ AI failed, try again (Invalid JSON response from AI)"],
-        hashtags: ["#error"],
-      });
-    }
+    const raw = completion.choices[0].message.content;
+    const parsed = JSON.parse(raw);
 
     res.json({
       captions: parsed.captions || [],
@@ -260,7 +205,14 @@ Return ONLY this JSON:
 });
 
 /* =======================
-   PORT (RENDER SAFE)
+   ROOT
+======================= */
+app.get("/", (req, res) => {
+  res.send("CreatorLab Backend is running ✅ Use /api/test");
+});
+
+/* =======================
+   PORT
 ======================= */
 const PORT = process.env.PORT || 5000;
 

@@ -9,7 +9,13 @@ export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    // ✅ Clear login storage (real logout)
+    localStorage.removeItem("creatorlab_token");
+    localStorage.removeItem("creatorlab_user");
+
+    // ✅ If you are using AuthContext logout also
+    if (logout) logout();
+
     navigate("/login");
   };
 
@@ -56,9 +62,7 @@ export default function DashboardLayout() {
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
           <h1 className="text-2xl font-bold">CreatorLab</h1>
-          <p className="text-xs text-gray-400 mt-1">
-            AI Tools Dashboard 🚀
-          </p>
+          <p className="text-xs text-gray-400 mt-1">AI Tools Dashboard 🚀</p>
         </div>
 
         {/* Nav */}

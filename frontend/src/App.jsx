@@ -6,14 +6,18 @@ import DashboardLayout from "./Layouts/DashboardLayout";
 import CaptionGenerator from "./pages/CaptionGenerator";
 import BioOptimizer from "./pages/BioOptimizer";
 import History from "./pages/History";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 export default function App() {
   return (
     <Routes>
-      {/* Default route */}
-      <Route path="/" element={<Navigate to="/caption" />} />
+      {/* Public routes */}
+      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-      {/* Layout wrapper */}
+      {/* Protected Dashboard Layout */}
       <Route element={<DashboardLayout />}>
         <Route path="/caption" element={<CaptionGenerator />} />
         <Route path="/bio" element={<BioOptimizer />} />
@@ -21,7 +25,7 @@ export default function App() {
       </Route>
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/caption" />} />
+      <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
 }
