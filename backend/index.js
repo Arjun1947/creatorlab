@@ -21,7 +21,6 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://creatorlab-1.onrender.com",
-      "https://creatorlab-1.onrender.com/frontend",
     ],
     credentials: true,
   })
