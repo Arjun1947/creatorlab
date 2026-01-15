@@ -6,6 +6,10 @@ export default function DashboardLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ Sidebar toggle
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // ✅ Backend status
   const [serverStatus, setServerStatus] = useState("checking");
   // checking | online | offline
   const [retrying, setRetrying] = useState(false);
@@ -60,93 +64,150 @@ export default function DashboardLayout() {
     return () => clearInterval(interval);
   }, [serverStatus]);
 
+  // ✅ Close sidebar on route click (mobile)
+  const handleNavClick = () => {
+    setSidebarOpen(false);
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col">
-        <h1 className="text-2xl font-bold mb-6">CreatorLab</h1>
-
-        {/* ✅ Backend status */}
-        <div className="mb-6 text-sm space-y-2">
-          {serverStatus === "checking" && (
-            <p className="text-yellow-300">⚡ Connecting to server...</p>
-          )}
-
-          {serverStatus === "online" && (
-            <p className="text-green-300">✅ Server is ready</p>
-          )}
-
-          {serverStatus === "offline" && (
-            <>
-              <p className="text-red-300">❌ Server sleeping / offline</p>
-
-              <button
-                onClick={wakeBackend}
-                disabled={retrying}
-                className={`w-full text-sm py-2 rounded ${
-                  retrying
-                    ? "bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                {retrying ? "Retrying..." : "🔄 Retry Connection"}
-              </button>
-
-              <p className="text-xs text-gray-300">
-                Auto retry running every 7 seconds...
-              </p>
-            </>
-          )}
-        </div>
-
-        <nav className="space-y-3 flex-1">
-          <NavLink
-            to="/caption"
-            className={({ isActive }) =>
-              `block px-4 py-2 rounded ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-800"
-              }`
-            }
-          >
-            🔥 Caption Generator
-          </NavLink>
-
-          <NavLink
-            to="/bio"
-            className={({ isActive }) =>
-              `block px-4 py-2 rounded ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-800"
-              }`
-            }
-          >
-            👤 Bio Optimizer
-          </NavLink>
-
-          <NavLink
-            to="/history"
-            className={({ isActive }) =>
-              `block px-4 py-2 rounded ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-800"
-              }`
-            }
-          >
-            🕒 History
-          </NavLink>
-        </nav>
-
-        {/* Logout */}
+    <div className="min-h-screen bg-gray-100">
+      {/* ✅ Topbar (Mobile) */}
+      <div className="md:hidden flex items-center justify-between bg-gray-900 text-white px-4 py-3">
         <button
-          onClick={handleLogout}
-          className="mt-6 bg-red-600 hover:bg-red-700 text-white py-2 rounded"
+          onClick={() => setSidebarOpen(true)}
+          className="text-2xl"
+          aria-label="Open Menu"
         >
-          🚪 Logout
+          ☰
         </button>
-      </aside>
 
-      {/* Main */}
-      <main className="flex-1 p-6 md:p-8">
-        <Outlet />
-      </main>
+        <h1 className="font-bold text-lg">CreatorLab</h1>
+
+        <div className="w-8" />
+      </div>
+
+      <div className="flex min-h-screen">
+        {/* ✅ Overlay (Mobile) */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          />
+        )}
+
+        {/* ✅ Sidebar */}
+        <aside
+          className={`
+            fixed md:static top-0 left-0 h-full z-50
+            w-72 md:w-64 bg-gray-900 text-white p-6 flex flex-col
+            transform transition-transform duration-300
+            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            md:translate-x-0
+          `}
+        >
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">CreatorLab</h1>
+
+            {/* Close button (Mobile) */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden text-2xl"
+              aria-label="Close Menu"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* ✅ Backend Status */}
+          <div className="mb-6 text-sm space-y-2 bg-gray-800 p-3 rounded">
+            {serverStatus === "checking" && (
+              <p className="text-yellow-300">⚡ Connecting to server...</p>
+            )}
+
+            {serverStatus === "online" && (
+              <p className="text-green-300">✅ Server is ready</p>
+            )}
+
+            {serverStatus === "offline" && (
+              <>
+                <p className="text-red-300">❌ Server sleeping / offline</p>
+
+                <button
+                  onClick={wakeBackend}
+                  disabled={retrying}
+                  className={`w-full text-sm py-2 rounded ${
+                    retrying
+                      ? "bg-gray-600 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {retrying ? "Retrying..." : "🔄 Retry Connection"}
+                </button>
+
+                <p className="text-xs text-gray-300">
+                  Auto retry every 7 seconds...
+                </p>
+              </>
+            )}
+          </div>
+
+          {/* Navigation */}
+          <nav className="space-y-3 flex-1">
+            <NavLink
+              to="/caption"
+              onClick={handleNavClick}
+              className={({ isActive }) =>
+                `block px-4 py-3 rounded font-medium ${
+                  isActive ? "bg-gray-700" : "hover:bg-gray-800"
+                }`
+              }
+            >
+              🔥 Caption Generator
+            </NavLink>
+
+            <NavLink
+              to="/bio"
+              onClick={handleNavClick}
+              className={({ isActive }) =>
+                `block px-4 py-3 rounded font-medium ${
+                  isActive ? "bg-gray-700" : "hover:bg-gray-800"
+                }`
+              }
+            >
+              👤 Bio Optimizer
+            </NavLink>
+
+            <NavLink
+              to="/history"
+              onClick={handleNavClick}
+              className={({ isActive }) =>
+                `block px-4 py-3 rounded font-medium ${
+                  isActive ? "bg-gray-700" : "hover:bg-gray-800"
+                }`
+              }
+            >
+              🕒 History
+            </NavLink>
+          </nav>
+
+          {/* Logout */}
+          <button
+            onClick={() => {
+              handleLogout();
+              setSidebarOpen(false);
+            }}
+            className="mt-6 bg-red-600 hover:bg-red-700 text-white py-3 rounded font-semibold"
+          >
+            🚪 Logout
+          </button>
+        </aside>
+
+        {/* ✅ Main Content */}
+        <main className="flex-1 p-4 md:p-8 md:ml-0">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
