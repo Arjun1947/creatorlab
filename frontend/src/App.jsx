@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import DashboardLayout from "./layouts/DashboardLayout";
+import DashboardLayout from "./Layouts/DashboardLayout";
 
 // pages
 import CaptionGenerator from "./pages/CaptionGenerator";
