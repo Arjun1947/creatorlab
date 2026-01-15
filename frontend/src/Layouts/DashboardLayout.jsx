@@ -50,46 +50,46 @@ export default function DashboardLayout() {
 
       {/* ✅ Sidebar */}
       <aside
-        className={`
-          fixed md:static top-0 left-0 z-50
-          h-full w-64 bg-gray-900 text-white
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
-          flex flex-col
-        `}
-      >
-        {/* Logo */}
-        <div className="p-6 border-b border-white/10">
-          <h1 className="text-2xl font-bold">CreatorLab</h1>
-          <p className="text-xs text-gray-400 mt-1">AI Tools Dashboard 🚀</p>
-        </div>
+  className={`
+    fixed md:static top-0 left-0 z-50
+    h-screen w-64 bg-gray-900 text-white
+    transform transition-transform duration-300 ease-in-out
+    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+    md:translate-x-0
+    flex flex-col
+  `}
+>
+  {/* Logo */}
+  <div className="p-6 border-b border-white/10">
+    <h1 className="text-2xl font-bold">CreatorLab</h1>
+    <p className="text-xs text-gray-400 mt-1">AI Tools Dashboard 🚀</p>
+  </div>
 
-        {/* Nav */}
-        <nav className="p-4 space-y-2 flex-1">
-          <NavLink to="/caption" className={linkClass} onClick={closeSidebar}>
-            🧠 Caption Generator
-          </NavLink>
+  {/* Nav */}
+  <nav className="p-4 space-y-2 flex-1">
+    <NavLink to="/caption" className={linkClass} onClick={closeSidebar}>
+      🧠 Caption Generator
+    </NavLink>
 
-          <NavLink to="/bio" className={linkClass} onClick={closeSidebar}>
-            👤 Bio Optimizer
-          </NavLink>
+    <NavLink to="/bio" className={linkClass} onClick={closeSidebar}>
+      👤 Bio Optimizer
+    </NavLink>
 
-          <NavLink to="/history" className={linkClass} onClick={closeSidebar}>
-            📌 History
-          </NavLink>
-        </nav>
+    <NavLink to="/history" className={linkClass} onClick={closeSidebar}>
+      📌 History
+    </NavLink>
+  </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-white/10">
-          <button
-            onClick={handleLogout}
-            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
-          >
-            🚪 Logout
-          </button>
-        </div>
-      </aside>
+  {/* Logout fixed bottom */}
+  <div className="p-4 border-t border-white/10 mt-auto">
+    <button
+      onClick={handleLogout}
+      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
+    >
+      🚪 Logout
+    </button>
+  </div>
+</aside>
 
       {/* ✅ Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen md:ml-0">
