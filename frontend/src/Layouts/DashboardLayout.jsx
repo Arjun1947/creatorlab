@@ -6,40 +6,59 @@ export default function DashboardLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const [serverStatus, setServerStatus] = useState("checking"); 
+  const [serverStatus, setServerStatus] = useState("checking");
   // checking | online | offline
+  const [retrying, setRetrying] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // ✅ Wake up backend on app load
-  useEffect(() => {
-    const wakeBackend = async () => {
-      try {
-        const API_URL = import.meta.env.VITE_API_URL;
+  // ✅ Function to wake backend
+  const wakeBackend = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
 
-        if (!API_URL) {
-          console.log("❌ VITE_API_URL missing");
-          setServerStatus("offline");
-          return;
-        }
+      if (!API_URL) {
+        console.log("❌ VITE_API_URL missing");
+        setServerStatus("offline");
+        return;
+      }
 
-        const res = await fetch(`${API_URL}/api/test`);
-        if (res.ok) {
-          setServerStatus("online");
-        } else {
-          setServerStatus("offline");
-        }
-      } catch (err) {
-        console.log("❌ Backend not reachable:", err);
+      setRetrying(true);
+      setServerStatus("checking");
+
+      const res = await fetch(`${API_URL}/api/test`);
+
+      if (res.ok) {
+        setServerStatus("online");
+      } else {
         setServerStatus("offline");
       }
-    };
+    } catch (err) {
+      console.log("❌ Backend not reachable:", err);
+      setServerStatus("offline");
+    } finally {
+      setRetrying(false);
+    }
+  };
 
+  // ✅ Wake backend on page load
+  useEffect(() => {
     wakeBackend();
   }, []);
+
+  // ✅ Auto retry every 7 sec if backend sleeping
+  useEffect(() => {
+    if (serverStatus !== "offline") return;
+
+    const interval = setInterval(() => {
+      wakeBackend();
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [serverStatus]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -48,15 +67,35 @@ export default function DashboardLayout() {
         <h1 className="text-2xl font-bold mb-6">CreatorLab</h1>
 
         {/* ✅ Backend status */}
-        <div className="mb-6 text-sm">
+        <div className="mb-6 text-sm space-y-2">
           {serverStatus === "checking" && (
             <p className="text-yellow-300">⚡ Connecting to server...</p>
           )}
+
           {serverStatus === "online" && (
             <p className="text-green-300">✅ Server is ready</p>
           )}
+
           {serverStatus === "offline" && (
-            <p className="text-red-300">❌ Server offline / sleeping</p>
+            <>
+              <p className="text-red-300">❌ Server sleeping / offline</p>
+
+              <button
+                onClick={wakeBackend}
+                disabled={retrying}
+                className={`w-full text-sm py-2 rounded ${
+                  retrying
+                    ? "bg-gray-600 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {retrying ? "Retrying..." : "🔄 Retry Connection"}
+              </button>
+
+              <p className="text-xs text-gray-300">
+                Auto retry running every 7 seconds...
+              </p>
+            </>
           )}
         </div>
 
