@@ -6,206 +6,112 @@ export default function DashboardLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ Sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // ✅ Backend status
-  const [serverStatus, setServerStatus] = useState("checking");
-  // checking | online | offline
-  const [retrying, setRetrying] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // ✅ Function to wake backend
-  const wakeBackend = async () => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL;
-
-      if (!API_URL) {
-        console.log("❌ VITE_API_URL missing");
-        setServerStatus("offline");
-        return;
-      }
-
-      setRetrying(true);
-      setServerStatus("checking");
-
-      const res = await fetch(`${API_URL}/api/test`);
-
-      if (res.ok) {
-        setServerStatus("online");
-      } else {
-        setServerStatus("offline");
-      }
-    } catch (err) {
-      console.log("❌ Backend not reachable:", err);
-      setServerStatus("offline");
-    } finally {
-      setRetrying(false);
-    }
-  };
-
-  // ✅ Wake backend on page load
+  // ✅ Close sidebar automatically when screen becomes desktop
   useEffect(() => {
-    wakeBackend();
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Auto retry every 7 sec if backend sleeping
-  useEffect(() => {
-    if (serverStatus !== "offline") return;
+  // ✅ Auto-close sidebar when clicking a menu item
+  const closeSidebar = () => setSidebarOpen(false);
 
-    const interval = setInterval(() => {
-      wakeBackend();
-    }, 7000);
-
-    return () => clearInterval(interval);
-  }, [serverStatus]);
-
-  // ✅ Close sidebar on route click (mobile)
-  const handleNavClick = () => {
-    setSidebarOpen(false);
-  };
+  const linkClass = ({ isActive }) =>
+    `block px-4 py-3 rounded-lg text-sm font-medium transition ${
+      isActive ? "bg-gray-700 text-white" : "text-gray-200 hover:bg-gray-800"
+    }`;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* ✅ Topbar (Mobile) */}
-      <div className="md:hidden flex items-center justify-between bg-gray-900 text-white px-4 py-3">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="text-2xl"
-          aria-label="Open Menu"
-        >
-          ☰
-        </button>
+    <div className="min-h-screen bg-gray-100 flex">
+      {/* ✅ Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        <h1 className="font-bold text-lg">CreatorLab</h1>
+      {/* ✅ Sidebar */}
+      <aside
+        className={`
+          fixed md:static top-0 left-0 z-50
+          h-full w-64 bg-gray-900 text-white
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          flex flex-col
+        `}
+      >
+        {/* Logo */}
+        <div className="p-6 border-b border-white/10">
+          <h1 className="text-2xl font-bold">CreatorLab</h1>
+          <p className="text-xs text-gray-400 mt-1">
+            AI Tools Dashboard 🚀
+          </p>
+        </div>
 
-        <div className="w-8" />
-      </div>
+        {/* Nav */}
+        <nav className="p-4 space-y-2 flex-1">
+          <NavLink to="/caption" className={linkClass} onClick={closeSidebar}>
+            🧠 Caption Generator
+          </NavLink>
 
-      <div className="flex min-h-screen">
-        {/* ✅ Overlay (Mobile) */}
-        {sidebarOpen && (
-          <div
-            onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          />
-        )}
+          <NavLink to="/bio" className={linkClass} onClick={closeSidebar}>
+            👤 Bio Optimizer
+          </NavLink>
 
-        {/* ✅ Sidebar */}
-        <aside
-          className={`
-            fixed md:static top-0 left-0 h-full z-50
-            w-72 md:w-64 bg-gray-900 text-white p-6 flex flex-col
-            transform transition-transform duration-300
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-            md:translate-x-0
-          `}
-        >
-          {/* Sidebar Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">CreatorLab</h1>
+          <NavLink to="/history" className={linkClass} onClick={closeSidebar}>
+            📌 History
+          </NavLink>
+        </nav>
 
-            {/* Close button (Mobile) */}
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="md:hidden text-2xl"
-              aria-label="Close Menu"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* ✅ Backend Status */}
-          <div className="mb-6 text-sm space-y-2 bg-gray-800 p-3 rounded">
-            {serverStatus === "checking" && (
-              <p className="text-yellow-300">⚡ Connecting to server...</p>
-            )}
-
-            {serverStatus === "online" && (
-              <p className="text-green-300">✅ Server is ready</p>
-            )}
-
-            {serverStatus === "offline" && (
-              <>
-                <p className="text-red-300">❌ Server sleeping / offline</p>
-
-                <button
-                  onClick={wakeBackend}
-                  disabled={retrying}
-                  className={`w-full text-sm py-2 rounded ${
-                    retrying
-                      ? "bg-gray-600 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700"
-                  }`}
-                >
-                  {retrying ? "Retrying..." : "🔄 Retry Connection"}
-                </button>
-
-                <p className="text-xs text-gray-300">
-                  Auto retry every 7 seconds...
-                </p>
-              </>
-            )}
-          </div>
-
-          {/* Navigation */}
-          <nav className="space-y-3 flex-1">
-            <NavLink
-              to="/caption"
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded font-medium ${
-                  isActive ? "bg-gray-700" : "hover:bg-gray-800"
-                }`
-              }
-            >
-              🔥 Caption Generator
-            </NavLink>
-
-            <NavLink
-              to="/bio"
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded font-medium ${
-                  isActive ? "bg-gray-700" : "hover:bg-gray-800"
-                }`
-              }
-            >
-              👤 Bio Optimizer
-            </NavLink>
-
-            <NavLink
-              to="/history"
-              onClick={handleNavClick}
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded font-medium ${
-                  isActive ? "bg-gray-700" : "hover:bg-gray-800"
-                }`
-              }
-            >
-              🕒 History
-            </NavLink>
-          </nav>
-
-          {/* Logout */}
+        {/* Logout */}
+        <div className="p-4 border-t border-white/10">
           <button
-            onClick={() => {
-              handleLogout();
-              setSidebarOpen(false);
-            }}
-            className="mt-6 bg-red-600 hover:bg-red-700 text-white py-3 rounded font-semibold"
+            onClick={handleLogout}
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
           >
             🚪 Logout
           </button>
-        </aside>
+        </div>
+      </aside>
 
-        {/* ✅ Main Content */}
-        <main className="flex-1 p-4 md:p-8 md:ml-0">
-          <Outlet />
+      {/* ✅ Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-screen md:ml-0">
+        {/* ✅ Top Bar (Mobile) */}
+        <header className="sticky top-0 z-30 bg-white border-b px-4 py-3 flex items-center justify-between md:hidden">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="px-3 py-2 rounded-lg bg-gray-900 text-white"
+          >
+            ☰
+          </button>
+
+          <h2 className="text-base font-semibold text-gray-800">
+            CreatorLab Dashboard
+          </h2>
+
+          <div className="w-10" />
+        </header>
+
+        {/* Page Content */}
+        <main className="p-4 md:p-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
+              <Outlet />
+            </div>
+          </div>
         </main>
       </div>
     </div>
