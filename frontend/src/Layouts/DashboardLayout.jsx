@@ -1,22 +1,17 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 
 export default function DashboardLayout() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
-    // ✅ Clear login storage (real logout)
-    localStorage.removeItem("creatorlab_token");
-    localStorage.removeItem("creatorlab_user");
-
-    // ✅ If you are using AuthContext logout also
-    if (logout) logout();
-
-    navigate("/login");
+    logout();
+    navigate("/caption");
   };
 
   // ✅ Close sidebar automatically when screen becomes desktop
@@ -30,12 +25,14 @@ export default function DashboardLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Auto-close sidebar when clicking a menu item
-  const closeSidebar = () => setSidebarOpen(false);
+  // ✅ FIX: Auto-close sidebar + overlay when route changes (prevents black layer)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   const linkClass = ({ isActive }) =>
     `block px-4 py-3 rounded-lg text-sm font-medium transition ${
-      isActive ? "bg-gray-700 text-white" : "text-gray-200 hover:bg-gray-800"
+      isActive ? "bg-gray-800 text-white" : "text-gray-200 hover:bg-gray-800"
     }`;
 
   return (
@@ -50,49 +47,80 @@ export default function DashboardLayout() {
 
       {/* ✅ Sidebar */}
       <aside
-  className={`
-    fixed md:static top-0 left-0 z-50
-    h-screen w-64 bg-gray-900 text-white
-    transform transition-transform duration-300 ease-in-out
-    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-    md:translate-x-0
-    flex flex-col
-  `}
->
-  {/* Logo */}
-  <div className="p-6 border-b border-white/10">
-    <h1 className="text-2xl font-bold">CreatorLab</h1>
-    <p className="text-xs text-gray-400 mt-1">AI Tools Dashboard 🚀</p>
-  </div>
+        className={`
+          fixed md:static top-0 left-0 z-50
+          h-full w-64 bg-gray-900 text-white
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          flex flex-col
+        `}
+      >
+        {/* Logo */}
+        <div className="p-6 border-b border-white/10">
+          <h1 className="text-2xl font-bold">CreatorLab</h1>
+          <p className="text-xs text-gray-400 mt-1">AI Tools Dashboard 🚀</p>
+        </div>
 
-  {/* Nav */}
-  <nav className="p-4 space-y-2 flex-1">
-    <NavLink to="/caption" className={linkClass} onClick={closeSidebar}>
-      🧠 Caption Generator
-    </NavLink>
+        {/* Nav */}
+        <nav className="p-4 space-y-2 flex-1">
+          <NavLink to="/caption" className={linkClass}>
+            🧠 Caption Generator
+          </NavLink>
 
-    <NavLink to="/bio" className={linkClass} onClick={closeSidebar}>
-      👤 Bio Optimizer
-    </NavLink>
+          <NavLink to="/bio" className={linkClass}>
+            👤 Bio Optimizer
+          </NavLink>
 
-    <NavLink to="/history" className={linkClass} onClick={closeSidebar}>
-      📌 History
-    </NavLink>
-  </nav>
+          <NavLink to="/history" className={linkClass}>
+            📌 History
+          </NavLink>
+        </nav>
 
-  {/* Logout fixed bottom */}
-  <div className="p-4 border-t border-white/10 mt-auto">
-    <button
-      onClick={handleLogout}
-      className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
-    >
-      🚪 Logout
-    </button>
-  </div>
-</aside>
+        {/* ✅ Auth Section */}
+        <div className="p-4 border-t border-white/10 space-y-2">
+          {user ? (
+            <>
+              <div className="text-xs text-gray-300 mb-2">
+                ✅ Logged in as{" "}
+                <span className="font-semibold text-white">
+                  {user?.name || "User"}
+                </span>
+              </div>
 
-      {/* ✅ Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen md:ml-0">
+              <button
+                onClick={handleLogout}
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
+              >
+                🚪 Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="text-xs text-gray-300 mb-2">
+                🔓 Guest Mode (Login to save favorites & history)
+              </div>
+
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full bg-white text-gray-900 py-2 rounded-lg font-semibold hover:bg-gray-200 transition"
+              >
+                🔑 Login
+              </button>
+
+              <button
+                onClick={() => navigate("/signup")}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                ✨ Sign Up
+              </button>
+            </>
+          )}
+        </div>
+      </aside>
+
+      {/* ✅ Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen">
         {/* ✅ Top Bar (Mobile) */}
         <header className="sticky top-0 z-30 bg-white border-b px-4 py-3 flex items-center justify-between md:hidden">
           <button

@@ -12,20 +12,22 @@ import Signup from "./pages/Signup";
 export default function App() {
   return (
     <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<Navigate to="/login" />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      {/* Default route = dashboard */}
+      <Route path="/" element={<Navigate to="/caption" />} />
 
-      {/* Protected Dashboard Layout */}
+      {/* Dashboard Layout */}
       <Route element={<DashboardLayout />}>
         <Route path="/caption" element={<CaptionGenerator />} />
         <Route path="/bio" element={<BioOptimizer />} />
         <Route path="/history" element={<History />} />
+
+        {/* Login inside dashboard */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Route>
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" />} />
+      {/* fallback */}
+      <Route path="*" element={<Navigate to="/caption" />} />
     </Routes>
   );
 }
