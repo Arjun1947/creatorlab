@@ -44,6 +44,9 @@ const groq = new Groq({
    AUTH ROUTES
 ======================= */
 app.use("/api/auth", authRoutes);
+import userDataRoutes from "./routes/userDataRoutes.js";
+
+app.use("/api/data", userDataRoutes);
 
 /* =======================
    HEALTH CHECK
