@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { googleLogin } from "../controllers/googleAuthController.js";
 
 const router = express.Router();
 
@@ -12,7 +13,6 @@ router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // basic validation
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -20,7 +20,6 @@ router.post("/signup", async (req, res) => {
       });
     }
 
-    // check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -29,11 +28,9 @@ router.post("/signup", async (req, res) => {
       });
     }
 
-    // hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // create user
     const user = await User.create({
       name,
       email,
@@ -65,7 +62,6 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -73,7 +69,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
@@ -82,7 +77,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -91,7 +85,6 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // create token
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -116,5 +109,10 @@ router.post("/login", async (req, res) => {
     });
   }
 });
+
+/* =======================
+   GOOGLE LOGIN
+======================= */
+router.post("/google", googleLogin);
 
 export default router;
