@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +25,9 @@ export default function Login() {
   const saveSession = (token, user) => {
     localStorage.setItem("creatorlab_token", token);
     localStorage.setItem("creatorlab_user", JSON.stringify(user));
+
+    setUser(data.user);
+    
   };
 
   // ✅ Normal Email Login
