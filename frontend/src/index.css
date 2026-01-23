@@ -1,3 +1,166 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* CreatorLab Design System - Vibrant & Modern */
+    --background: 0 0% 99%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    /* Coral/Pink gradient primary */
+    --primary: 350 85% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 10%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 350 85% 95%;
+    --accent-foreground: 350 85% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 350 85% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradient colors */
+    --gradient-start: 350 85% 60%;
+    --gradient-end: 330 85% 55%;
+    --gradient-accent: 280 80% 60%;
+
+    /* Sidebar */
+    --sidebar-background: 240 10% 98%;
+    --sidebar-foreground: 240 10% 30%;
+    --sidebar-primary: 350 85% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 350 85% 95%;
+    --sidebar-accent-foreground: 350 85% 40%;
+    --sidebar-border: 240 6% 92%;
+    --sidebar-ring: 350 85% 60%;
+
+    /* Success */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --background: 240 10% 6%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 350 85% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 18%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 240 5% 18%;
+    --muted-foreground: 240 4% 60%;
+
+    --accent: 350 50% 20%;
+    --accent-foreground: 350 85% 80%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
+    --ring: 350 85% 60%;
+
+    --sidebar-background: 240 10% 8%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 350 85% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 350 50% 15%;
+    --sidebar-accent-foreground: 350 85% 80%;
+    --sidebar-border: 240 5% 18%;
+    --sidebar-ring: 350 85% 60%;
+
+    --success: 142 76% 46%;
+    --success-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))];
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-[hsl(var(--gradient-accent))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent;
+  }
+
+  .gradient-border {
+    @apply relative;
+    background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+                linear-gradient(135deg, hsl(var(--primary)), hsl(var(--gradient-accent)), hsl(var(--gradient-end))) border-box;
+    border: 2px solid transparent;
+  }
+
+  .glass {
+    @apply bg-background/80 backdrop-blur-lg;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
