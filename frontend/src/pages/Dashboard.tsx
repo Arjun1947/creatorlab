@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { GeneratorForm, GeneratorInput } from "@/components/generators/GeneratorForm";
 import { OutputCard } from "@/components/generators/OutputCard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,12 +28,36 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<GenerationType>("caption");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<GenerationResult | null>(null);
+
   const { profile, refreshProfile, user } = useAuth();
   const { toast } = useToast();
 
-  const canGenerate = profile?.is_pro || (profile?.daily_generations_count || 0) < 10;
+  // Daily limit rule (10 free generations)
+  const canGenerate =
+    profile?.is_pro || (profile?.daily_generations_count || 0) < 10;
 
   const handleGenerate = async (type: GenerationType, input: GeneratorInput) => {
+    // 1) User must be logged in
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to generate content.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 2) Profile must be available
+    if (!profile) {
+      toast({
+        title: "Profile not loaded",
+        description: "Please refresh the page and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 3) Daily limit check
     if (!canGenerate) {
       toast({
         title: "Daily limit reached",
@@ -41,6 +71,7 @@ export default function Dashboard() {
     setResult(null);
 
     try {
+      // Call Supabase Edge Function
       const { data, error } = await supabase.functions.invoke("generate", {
         body: {
           type,
@@ -52,46 +83,69 @@ export default function Dashboard() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || "Failed to generate.");
+      }
 
-      const outputs = data.outputs || [];
+      const outputs: string[] = Array.isArray(data?.outputs) ? data.outputs : [];
+
+      if (!outputs.length) {
+        throw new Error("No output generated. Please try again.");
+      }
+
       setResult({ type, outputs, input });
 
-      // Save to history
-      if (user) {
-        await supabase.from("generations").insert({
-          user_id: user.id,
-          platform: input.platform,
-          niche: input.niche,
-          language: input.language,
-          tone: input.tone,
-          input_text: input.inputText,
-          generation_type: type,
-          output: outputs,
-        });
+      // Save generation history
+      const { error: historyError } = await supabase.from("generations").insert({
+        user_id: user.id,
+        platform: input.platform,
+        niche: input.niche,
+        language: input.language,
+        tone: input.tone,
+        input_text: input.inputText,
+        generation_type: type,
+        output: outputs,
+      });
 
-        // Update daily count
-        const today = new Date().toISOString().split("T")[0];
-        if (profile?.last_generation_date !== today) {
-          await supabase
-            .from("profiles")
-            .update({ daily_generations_count: 1, last_generation_date: today })
-            .eq("user_id", user.id);
-        } else {
-          await supabase
-            .from("profiles")
-            .update({ daily_generations_count: (profile?.daily_generations_count || 0) + 1 })
-            .eq("user_id", user.id);
-        }
-        await refreshProfile();
+      if (historyError) {
+        console.error("History insert error:", historyError.message);
       }
+
+      // Update daily count
+      const today = new Date().toISOString().split("T")[0];
+
+      if (profile.last_generation_date !== today) {
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ daily_generations_count: 1, last_generation_date: today })
+          .eq("user_id", user.id);
+
+        if (updateError) {
+          console.error("Profile update error:", updateError.message);
+        }
+      } else {
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            daily_generations_count: (profile.daily_generations_count || 0) + 1,
+          })
+          .eq("user_id", user.id);
+
+        if (updateError) {
+          console.error("Profile update error:", updateError.message);
+        }
+      }
+
+      await refreshProfile();
 
       toast({
         title: "Generated!",
         description: `Your ${type}s are ready.`,
       });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to generate. Please try again.";
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to generate. Please try again.";
+
       toast({
         title: "Error",
         description: message,
@@ -138,12 +192,14 @@ export default function Dashboard() {
                     <tab.icon className="h-5 w-5 text-primary" />
                     {tab.label} Generator
                   </CardTitle>
+
                   <CardDescription>
                     {tab.id === "caption" && "Generate engaging captions for your Reels and Shorts"}
                     {tab.id === "hashtag" && "Get trending hashtags to maximize your reach"}
                     {tab.id === "hook" && "Create scroll-stopping hooks for your videos"}
                   </CardDescription>
                 </CardHeader>
+
                 <CardContent>
                   <GeneratorForm
                     type={tab.id}
@@ -161,11 +217,7 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold">Generated {result.type}s</h3>
             <div className="grid gap-4">
               {result.outputs.map((output, index) => (
-                <OutputCard
-                  key={index}
-                  content={output}
-                  index={index}
-                />
+                <OutputCard key={index} content={output} index={index} />
               ))}
             </div>
           </div>
